@@ -1,0 +1,24 @@
+/* Native mobile selects and large touch targets. No external fonts or services. */
+.quick-entry{padding:20px;margin:15px 0 22px;border:1px solid #bfd0ad;border-radius:16px;background:#f0f5e8;min-width:0}
+.qe-heading h3{margin:0 0 5px;font-size:18px;color:#244e37}
+.qe-heading p{margin:0 0 16px;font-size:12px;color:#5d7056}
+.qe-fields{display:grid;grid-template-columns:minmax(120px,.7fr) minmax(180px,1.6fr) 150px auto;gap:12px;align-items:end}
+.qe-fields label{display:block;min-width:0;color:#45603e;font-size:12px;font-weight:650}
+.qe-fields select,.qe-stepper input{width:100%;max-width:100%;min-width:0;min-height:48px;margin:6px 0 0;padding:10px;border:1px solid #bccfac;border-radius:9px;background:#fff;color:#244331;font:inherit;font-size:16px}
+.qe-stepper{display:grid;grid-template-columns:44px minmax(32px,1fr) 44px;margin-top:6px;border:1px solid #bccfac;border-radius:9px;background:#fff;overflow:hidden}
+.qe-stepper button{min-width:44px;min-height:48px;padding:4px;border:0;border-radius:0;background:#e1edcf;color:#345831;font-size:24px}
+.qe-stepper input{margin:0;padding:8px 1px;text-align:center;border:0;border-radius:0;font-size:18px;font-variant-numeric:tabular-nums}
+.qe-add{min-height:50px;padding:12px 18px;border:1px solid #174c3c;border-radius:10px;background:#174c3c;color:#fff;font-size:15px;font-weight:700}
+.quick-entry button:disabled,.quick-entry select:disabled{opacity:.5;cursor:not-allowed}
+.quick-entry :focus-visible{outline:3px solid #759b52;outline-offset:2px}
+.qe-hint{margin:13px 0 0;font-size:12px;line-height:1.65;color:#4f6847}
+.qe-result{margin:12px 0 0;padding:10px 12px;border:1px solid #c3d7ae;border-radius:9px;background:#e0edd5;font-size:13px;line-height:1.6;color:#244a30}
+.qe-result.qe-error{border-color:#e0b8a9;background:#fff1ec;color:#8c342f}
+.qe-recorded-title{font-size:15px;margin:16px 0 8px}
+.qe-live-mode .recording-section>.toolbar,.qe-live-mode .recording-section>.filters{display:none}
+.qe-live-mode .intro-note{display:none}
+.qe-live-mode .product-card[hidden],.qe-live-mode .product-section[hidden]{display:none!important}
+.qe-empty{padding:16px;border:1px dashed #cad9bc;border-radius:12px;color:#627857;font-size:12px}
+@media(max-width:1100px){.qe-fields{grid-template-columns:1fr 1.6fr}.qe-amount{grid-column:1}.qe-add{grid-column:2}}
+@media(max-width:560px){.quick-entry{padding:17px 14px}.qe-fields{grid-template-columns:minmax(120px,1fr) minmax(108px,1fr);gap:12px}.qe-category,.qe-type{grid-column:1/-1}.qe-fields select{font-size:16px}.qe-add{padding:12px 8px}.qe-hint{font-size:12px}.qe-heading h3{font-size:17px}}
+@media(max-width:340px){.qe-fields{grid-template-columns:1fr}.qe-amount,.qe-add{grid-column:1}}
