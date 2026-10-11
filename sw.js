@@ -1,4 +1,4 @@
-const CACHE='muszaknaplo-shell-v3-dropdown';
+const CACHE='muszaknaplo-shell-v4-upper-lower';
 const FILES=['./','./style.css','./app.mjs','./model.mjs','./catalog.mjs','./icon.svg','./icon-192.png','./icon-512.png','./manifest.webmanifest','./quick-entry.css','./quick-entry.mjs','./quick-entry-live.mjs'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
