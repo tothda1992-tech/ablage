@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {addedCount,productLabel} from '../dist/quick-entry.mjs';
+import {addedCount,productLabel,productsForPosition} from '../dist/quick-entry.mjs';
 import {PRODUCTS} from '../dist/catalog.mjs';
 
 test('addition accumulates integer pieces and does not replace them',()=>{
@@ -23,4 +23,14 @@ test('all 39 catalog entries are available, including both GERM types',()=>{
 test('old lower code and disputed stable code remain explicit',()=>{
   assert.equal(productLabel(PRODUCTS.find(p=>p.id==='product_4674')),'7374 (régi: 4674)');
   assert.equal(productLabel(PRODUCTS.find(p=>p.id==='product_5174')),'5174 — új kód egyeztetendő');
+});
+
+test('upper, lower and accessory options form disjoint complete lists',()=>{
+  const parts=['upper','lower','accessory'].map(position=>productsForPosition(PRODUCTS,position));
+  assert.deepEqual(parts.map(x=>x.length),[23,13,3]);
+  assert.equal(new Set(parts.flat().map(p=>p.id)).size,39);
+  for(const [i,position] of ['upper','lower','accessory'].entries()) assert.ok(parts[i].every(p=>p.position===position));
+  assert.ok(parts[0].some(p=>p.id==='germersheim_upper'));
+  assert.ok(parts[1].some(p=>p.id==='germersheim_lower'));
+  assert.deepEqual(productsForPosition(PRODUCTS,'all'),[]);
 });

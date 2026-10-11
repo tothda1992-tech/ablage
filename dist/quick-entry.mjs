@@ -1,7 +1,12 @@
-// UI-only quick entry. The owning app keeps responsibility for validation and saving.
+// UI only: upper, lower and accessory entry use the existing app's save path.
 const escapeText = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const fmt = value => new Intl.NumberFormat('hu-HU', {minimumFractionDigits:2, maximumFractionDigits:2}).format(value / 100);
-const positions = [['all','Összes típus'],['upper','Felső'],['lower','Alsó'],['accessory','Kiegészítők']];
+const positions = [
+  {id:'upper', title:'Felső', type:'Felső típusa', add:'Felső hozzáadása'},
+  {id:'lower', title:'Alsó', type:'Alsó típusa', add:'Alsó hozzáadása'},
+  {id:'accessory', title:'Kiegészítők', type:'Kiegészítő típusa', add:'Kiegészítő hozzáadása'}
+];
+let nextInstance = 0;
 
 export function addedCount(current, amount) {
   const text = String(amount).trim();
@@ -14,73 +19,96 @@ export function productLabel(product) {
   const old = (product.aliases || []).find(code => /^\d+$/.test(code) && code !== product.code);
   return product.code + (old ? ` (régi: ${old})` : '');
 }
+export function productsForPosition(products, position) {
+  if (!positions.some(p => p.id === position)) return [];
+  return products.filter(p => p.position === position);
+}
 
 export function createQuickEntry(host, options) {
   const {products, getCount, getRate, isLocked, onAdd, memoryKey = 'individual'} = options;
-  const key = 'muszaknaplo.quick-type.v1.' + memoryKey;
-  let selected = '', category = 'all', active = false;
-  try { const saved = localStorage.getItem(key); if (products.some(p => p.id === saved)) selected = saved; } catch { /* Optional UI preference, never a diary save. */ }
-  host.innerHTML = `<form class="quick-entry" novalidate aria-label="Gyors termékrögzítés">
-    <div class="qe-heading"><h3>Válaszd ki, írd fel, kész.</h3><p>Nincs keresgélés: típus → darabszám → hozzáadás.</p></div>
-    <div class="qe-fields"><label class="qe-category">Csoport<select name="qeCategory" aria-label="Típuscsoport">${positions.map(([id,label])=>`<option value="${id}">${label}</option>`).join('')}</select></label>
-    <label class="qe-type">Típus<select name="qeProduct" aria-label="Típus" aria-describedby="qeHint"></select></label>
-    <label class="qe-amount">Hozzáadandó darabok<span class="qe-stepper"><button type="button" data-qe-step="-1" aria-label="Hozzáadandó darabszám csökkentése">−</button><input name="qeAmount" value="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Hozzáadandó darabszám"><button type="button" data-qe-step="1" aria-label="Hozzáadandó darabszám növelése">+</button></span></label>
-    <button type="submit" class="qe-add">Hozzáadás</button></div>
-    <p id="qeHint" class="qe-hint"></p><p class="qe-result" role="status" aria-live="polite" hidden></p>
-  </form>`;
-  const form = host.querySelector('form'), select = form.elements.qeProduct, group = form.elements.qeCategory, amount = form.elements.qeAmount;
-  const add = form.querySelector('.qe-add'), hint = form.querySelector('.qe-hint'), result = form.querySelector('.qe-result');
-  function remember() { try { if (selected) localStorage.setItem(key, selected); } catch {} }
-  function populate() {
-    const available = products.filter(p => category === 'all' || p.position === category);
-    const groups = [...new Set(available.map(p => p.group))].sort((a,b)=> {
-      const order = {upper:0,lower:1,accessory:2};
-      return order[available.find(p=>p.group===a).position] - order[available.find(p=>p.group===b).position];
-    });
-    select.innerHTML = '<option value="">Válassz típust…</option>' + groups.map(name => `<optgroup label="${escapeText(name)}">${available.filter(p=>p.group===name).map(p=>`<option value="${escapeText(p.id)}">${escapeText(productLabel(p))}</option>`).join('')}</optgroup>`).join('');
-    select.value = available.some(p=>p.id===selected) ? selected : '';
-    selected = select.value;
-  }
-  function refresh() {
-    const locked = isLocked() || active;
-    group.disabled = select.disabled = amount.disabled = locked;
-    form.querySelectorAll('[data-qe-step]').forEach(b => { b.disabled = locked || (b.dataset.qeStep === '-1' && Number(amount.value) <= 1); });
-    const product = products.find(p=>p.id===selected);
-    add.disabled = locked || !product;
-    if (!product) { hint.textContent = locked ? 'Ez a nap lezárt; újranyitás után rögzíthetsz.' : 'Válassz a listából. A kiválasztott típust megjegyzi az app.'; return; }
-    const current = getCount(product.id), rate = getRate(product);
-    if (!Number.isSafeInteger(rate) || rate < 0) { add.disabled=true; hint.textContent='A normaidő nem olvasható. Frissítsd az oldalt.'; return; }
-    let preview = '';
-    try { const next = addedCount(current, amount.value); preview = ` · +${next-current} db = ${fmt((next-current)*rate)} perc`; } catch {}
-    hint.textContent = `${fmt(rate)} perc/db · Ma már: ${current} db${preview}` + (product.id==='product_5174' ? ' · Papír: 7874 / Excel: 7877.' : '');
-  }
-  group.addEventListener('change', () => { category=group.value; populate(); result.hidden=true; refresh(); });
-  select.addEventListener('change', () => { selected=select.value; remember(); result.hidden=true; refresh(); });
-  amount.addEventListener('input', () => { amount.setCustomValidity(''); result.hidden=true; refresh(); });
-  form.addEventListener('click', event => {
-    const button=event.target.closest('[data-qe-step]');
-    if (!button || button.disabled) return;
-    const n=Number(amount.value);
-    amount.value=String(Math.min(99999,Math.max(1,(Number.isSafeInteger(n)?n:1)+Number(button.dataset.qeStep))));
-    amount.setCustomValidity(''); result.hidden=true; refresh();
-  });
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    if (active || isLocked()) return;
-    const product=products.find(p=>p.id===selected);
-    if (!product) { select.focus(); return; }
+  const instance = ++nextInstance;
+  const prefix = 'muszaknaplo.quick-type.v2.' + memoryKey + '.';
+  let legacy = '', active = false;
+  try { legacy = localStorage.getItem('muszaknaplo.quick-type.v1.' + memoryKey) || ''; } catch { /* Optional UI preference only. */ }
+  const panels = positions.filter(p => productsForPosition(products, p.id).length);
+  host.innerHTML = `<section class="quick-entry" aria-label="Gyors termékrögzítés">
+    <div class="qe-heading"><h2>Felső és alsó külön</h2><p>A megfelelő részben válassz típust, majd add hozzá a darabokat.</p></div>
+    <div class="qe-panels">${panels.map(p => `<form class="qe-panel" data-qe-position="${p.id}" novalidate aria-label="${p.title} rögzítése">
+      <div class="qe-panel-heading"><h3>${p.title}</h3><span class="qe-panel-total">Ma: 0 db</span></div>
+      <div class="qe-fields"><label class="qe-type">${p.type}<select name="qeProduct" aria-label="${p.type}" aria-describedby="qeHint-${instance}-${p.id}"></select></label>
+      <label class="qe-amount">Darabszám<span class="qe-stepper"><button type="button" data-qe-step="-1" aria-label="${p.title}: darabszám csökkentése">−</button><input name="qeAmount" value="1" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="${p.title}: hozzáadandó darabszám"><button type="button" data-qe-step="1" aria-label="${p.title}: darabszám növelése">+</button></span></label>
+      <button type="submit" class="qe-add">${p.add}</button></div>
+      <p id="qeHint-${instance}-${p.id}" class="qe-hint"></p><p class="qe-result" role="status" aria-live="polite" hidden></p>
+    </form>`).join('')}</div>
+  </section>`;
+  const controllers = [];
+  function refresh() { controllers.forEach(controller => controller.refresh()); }
+  for (const panel of panels) {
+    const available = productsForPosition(products, panel.id);
+    const form = host.querySelector(`[data-qe-position="${panel.id}"]`);
+    const select = form.elements.qeProduct, amount = form.elements.qeAmount;
+    const add = form.querySelector('.qe-add'), hint = form.querySelector('.qe-hint');
+    const result = form.querySelector('.qe-result'), total = form.querySelector('.qe-panel-total');
+    let selected = '';
     try {
-      const current=getCount(product.id), next=addedCount(current,amount.value), increment=next-current;
-      active=true;
-      onAdd(product.id,increment);
-      if(getCount(product.id)!==next) throw new Error('A darabszámot nem sikerült hozzáadni. Ellenőrizd a rögzítést.');
-      amount.value='1'; amount.setCustomValidity(''); remember();
-      result.textContent=`${product.code}: +${increment} db. Napi összesen: ${next} db · ${fmt(next*getRate(product))} perc.`;
-      result.classList.remove('qe-error'); result.hidden=false;
-    } catch(error) {
-      result.textContent=error.message; result.classList.add('qe-error'); result.hidden=false;
-    } finally { active=false; refresh(); }
-  });
-  populate(); refresh();
+      const saved = localStorage.getItem(prefix + panel.id);
+      const candidate = saved || legacy;
+      if (available.some(p => p.id === candidate)) selected = candidate;
+    } catch { /* A blocked preference store must never block recording. */ }
+    const groups = [...new Set(available.map(p => p.group))];
+    select.innerHTML = '<option value="">Válassz típust…</option>' + groups.map(name => `<optgroup label="${escapeText(name)}">${available.filter(p=>p.group===name).map(p=>`<option value="${escapeText(p.id)}">${escapeText(productLabel(p))}</option>`).join('')}</optgroup>`).join('');
+    select.value = selected;
+    function remember() { try { if (selected) localStorage.setItem(prefix + panel.id, selected); } catch {} }
+    function clearResult() { result.hidden = true; result.classList.remove('qe-error'); }
+    function refreshPanel() {
+      const locked = isLocked() || active;
+      select.disabled = amount.disabled = locked;
+      form.querySelectorAll('[data-qe-step]').forEach(b => { b.disabled = locked || (b.dataset.qeStep === '-1' && Number(amount.value) <= 1) || (b.dataset.qeStep === '1' && Number(amount.value) >= 99999); });
+      add.disabled = true;
+      try {
+        total.textContent = `Ma: ${available.reduce((sum,p)=>sum+getCount(p.id),0)} db`;
+        const product = available.find(p=>p.id===selected);
+        if (locked) { hint.textContent = active ? 'Hozzáadás…' : 'Ez a nap lezárt vagy beküldött; újranyitás után rögzíthetsz.'; return; }
+        if (!product) { hint.textContent = 'Válassz típust. Ebben a részben külön megmarad a választásod.'; return; }
+        const current = getCount(product.id), rate = getRate(product);
+        if (!Number.isSafeInteger(rate) || rate < 0) { hint.textContent = 'A normaidő nem olvasható. Frissítsd az oldalt.'; return; }
+        add.disabled = false;
+        let preview = '';
+        try { const next = addedCount(current, amount.value); preview = ` · +${next-current} db = ${fmt((next-current)*rate)} perc`; } catch {}
+        hint.textContent = `${fmt(rate)} perc/db · Ma: ${current} db${preview}` + (product.id==='product_5174' ? ' · Papír: 7874 / Excel: 7877.' : '');
+      } catch (error) { hint.textContent = error.message; add.disabled = true; }
+    }
+    select.addEventListener('change', () => { selected=select.value; remember(); clearResult(); refreshPanel(); });
+    amount.addEventListener('input', () => { amount.setCustomValidity(''); clearResult(); refreshPanel(); });
+    form.addEventListener('click', event => {
+      const button=event.target.closest('[data-qe-step]');
+      if (!button || button.disabled || active || isLocked()) return;
+      const n=Number(amount.value);
+      amount.value=String(Math.min(99999,Math.max(1,(Number.isSafeInteger(n)?n:1)+Number(button.dataset.qeStep))));
+      amount.setCustomValidity(''); clearResult(); refreshPanel();
+    });
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      if (active || isLocked()) return;
+      // Restrict submission as well as the visible list to this panel's position.
+      const product=available.find(p=>p.id===selected);
+      if (!product) { select.focus(); return; }
+      try {
+        const rate=getRate(product);
+        if (!Number.isSafeInteger(rate) || rate < 0) throw new Error('A normaidő nem olvasható. Frissítsd az oldalt.');
+        const current=getCount(product.id), next=addedCount(current,amount.value), increment=next-current;
+        active=true;
+        onAdd(product.id,increment);
+        if(getCount(product.id)!==next) throw new Error('A darabszámot nem sikerült hozzáadni. Ellenőrizd a rögzítést.');
+        amount.value='1'; amount.setCustomValidity(''); remember();
+        result.textContent=`${product.code}: +${increment} db. Napi összesen: ${next} db · ${fmt(next*rate)} perc.`;
+        result.classList.remove('qe-error'); result.hidden=false;
+      } catch(error) {
+        result.textContent=error.message; result.classList.add('qe-error'); result.hidden=false;
+      } finally { active=false; refresh(); }
+    });
+    controllers.push({refresh:refreshPanel});
+  }
+  refresh();
   return {refresh};
 }
