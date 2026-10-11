@@ -1,0 +1,44 @@
+name: Draft save and submit (test database only)
+on:
+  push:
+    branches: [feature/central-drafts-20261011]
+  pull_request:
+    paths: ['supabase/**', 'dist/workday-gateway.mjs', 'tests/security/workday-gateway.test.mjs', '.github/workflows/draft-sync-tests.yml']
+permissions:
+  contents: read
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: access_test
+          POSTGRES_PASSWORD: disposable-ci-only-not-an-app-password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prior isolation regression then draft/report protocol
+        env:
+          CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          cat supabase/tests/bootstrap.sql \
+              supabase/migrations/2026101101_team.sql \
+              supabase/migrations/2026101102_catalog.sql \
+              supabase/migrations/2026101104_access.sql \
+              supabase/tests/access.sql \
+              supabase/migrations/2026101105_shared_workbook.sql \
+              supabase/migrations/2026101106_draft_sync.sql \
+              supabase/tests/draft_sync.sql \
+            | docker exec -i "$CONTAINER_ID" psql -X -U postgres -d access_test -v ON_ERROR_STOP=1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Identity and request retry adapter tests
+        run: node --experimental-strip-types --test tests/security/*.test.mjs
