@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#174c3c">
+  <meta name="description" content="Termékek rögzítése egy érintéssel. Napi darabszámok, normaidők és elszámolás a saját munkanaplódban.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Műszaknapló">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./style.css">
+  <title>Műszaknapló – napi elszámolás</title>
+</head>
+<body>
+  <a class="skip-link" href="#main">Ugrás a naplóhoz</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Főmenü">
+      <a class="brand" href="#today"><img src="./icon.svg" alt="" width="42" height="42"><span>Műszaknapló<small>Minden darab számít.</small></span></a>
+      <p class="nav-caption">MUNKANAPLÓ</p>
+      <nav class="desktop-nav" aria-label="Oldalak">
+        <button type="button" data-view="today"><span data-icon="grid"></span>Napi rögzítés</button>
+        <button type="button" data-view="summary"><span data-icon="report"></span>Elszámolás</button>
+        <button type="button" data-view="history"><span data-icon="calendar"></span>Előzmények</button>
+        <button type="button" data-view="settings"><span data-icon="settings"></span>Beállítások</button>
+      </nav>
+      <div class="sidebar-note"><span data-icon="check"></span><div>Érintsd. Számold. Kész.<p>A napod adatai rögzítés közben automatikusan mentődnek ezen az eszközön.</p></div></div>
+      <div class="sidebar-user"><span class="avatar">TD</span><div><strong id="sidebarName">Tóth Dávid</strong><small>Saját munkanapló</small></div></div>
+    </aside>
+    <main id="main" class="main" tabindex="-1">
+      <header class="topbar">
+        <div><p class="eyebrow" id="pageEyebrow">EGYSZERŰBB MUNKANAPOK</p><h1 id="pageTitle">Napi rögzítés</h1></div>
+        <div class="topbar-actions"><span id="saveStatus" class="save-status" role="status">Mentésre kész</span><button type="button" class="icon-button" data-action="help" aria-label="Használati segítség"><span data-icon="help"></span></button></div>
+      </header>
+      <div id="storageWarning" class="notice warning" role="alert" hidden></div>
+      <div id="dateToolbar" class="date-toolbar">
+        <div class="date-control"><button type="button" class="icon-button" data-action="previous-day" aria-label="Előző nap"><span data-icon="left"></span></button><label class="date-label"><span data-icon="calendar"></span><input id="dayDate" type="date" min="2000-01-01" max="2199-12-31" aria-label="Napló dátuma"></label><button type="button" class="icon-button" data-action="next-day" aria-label="Következő nap"><span data-icon="right"></span></button><button type="button" class="text-button" data-action="today">Ma</button></div>
+        <span id="weekday" class="weekday"></span>
+      </div>
+      <div id="viewHost"><div class="empty-state"><h2>Megnyílik a munkanaplód…</h2><p>Ha ez az üzenet megmarad, frissítsd az oldalt.</p></div></div>
+      <footer class="app-footer"><span>Műszaknapló</span><span>Saját napló · <span id="connectionStatus">Online</span></span></footer>
+    </main>
+    <nav class="bottom-nav" aria-label="Mobil menü">
+      <button type="button" data-view="today"><span data-icon="grid"></span><span>Rögzítés</span></button>
+      <button type="button" data-view="summary"><span data-icon="report"></span><span>Elszámolás</span></button>
+      <button type="button" data-view="history"><span data-icon="calendar"></span><span>Előzmények</span></button>
+      <button type="button" data-view="settings"><span data-icon="settings"></span><span>Beállítások</span></button>
+    </nav>
+  </div>
+  <dialog id="dialog" aria-labelledby="dialogTitle"><div id="dialogContent"></div></dialog>
+  <div id="toast" class="toast" role="status" hidden><span id="toastText"></span><button type="button" id="undoButton" hidden>Visszavonás</button><button type="button" id="toastClose" aria-label="Értesítés bezárása">×</button></div>
+  <div id="printArea" class="print-area"></div>
+  <input type="file" id="backupInput" accept="application/json,.json" hidden>
+  <noscript><div class="notice warning">A munkanaplóhoz engedélyezd a JavaScriptet a böngészőben.</div></noscript>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>
