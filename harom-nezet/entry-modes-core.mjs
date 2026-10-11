@@ -2,7 +2,7 @@
  * Receipts identify one product edit, never a snapshot of the whole team's data.
  */
 import {PRODUCTS,emptyPayload,normSnapshot,calculate,validDate,count} from '../team-core.mjs';
-export const ENTRY_MODES=[{id:'list',label:'Gyors lista'},{id:'cards',label:'Kártyás kereső'},{id:'big',label:'Nagygombos'}];
+export const ENTRY_MODES=[{id:'list',label:'Gyors lista'},{id:'cards',label:'Kártyás számláló'},{id:'big',label:'Nagygombos'}];
 export const POSITIONS=[{id:'upper',label:'Felső'},{id:'lower',label:'Alsó'},{id:'accessory',label:'Kiegészítők'}];
 const validId=x=>typeof x==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(x);
 const validPosition=x=>POSITIONS.some(p=>p.id===x);
