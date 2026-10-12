@@ -24,3 +24,4 @@ export function createPilotApi(session,getActor){
  }
  async function job(month){const a=actor();if(a.role!=='manager'||!validMonth(month))throw Error('Hozzáférés megtagadva.');const rows=await session.json(`/rest/v1/team_workbook_jobs?select=generation,processed_generation,updated_at&workspace_id=eq.${a.workspace_id}&report_month=eq.${month}-01`);same(a);return rows[0]??null;}
  return Object.freeze({month,profiles,send,decide,book,job,rpc});
+}
