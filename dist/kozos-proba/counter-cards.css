@@ -1,0 +1,26 @@
+/* Paper-like counters requested from the user's screenshot. Other two renderers unchanged. */
+.em-counter-help{color:#b8c9da;font-size:13px;line-height:1.7;margin:0 0 16px}
+.em-counter-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.em-counter{--accent:var(--em-green);min-width:0;display:flex;flex-direction:column;border:1px solid #3b4c5e;border-radius:18px;padding:16px;background:linear-gradient(145deg,#1c2b3a,#15212e);transition:background-color .15s,border-color .15s}
+.em-counter.em-lower{--accent:var(--em-blue)}.em-counter.em-accessory{--accent:var(--em-purple)}
+.em-counter.has-count{border-color:var(--accent);box-shadow:inset 0 3px var(--accent);background:linear-gradient(145deg,#203a33,#162830)}
+.em-counter.em-lower.has-count{background:linear-gradient(145deg,#23364b,#182431)}.em-counter.em-accessory.has-count{background:linear-gradient(145deg,#312d47,#201e31)}
+.em-counter h3{font-size:28px;line-height:1.25;letter-spacing:-.025em;margin:0 0 8px;color:#f0f7ff;overflow-wrap:anywhere}
+.em-counter-group{font-size:13px;line-height:1.55;margin:0 0 8px;color:#bfcedb;min-height:40px}
+.em-counter-alias{font-size:11px;line-height:1.5;color:#adc4db;margin:0 0 8px;overflow-wrap:anywhere}
+.em-counter-rate{font-size:14px;color:var(--accent);margin:5px 0 12px}
+.em-counter-form{margin-top:auto}.em-counter-caption{display:block;color:#bacddb;font-size:10px;margin-bottom:5px}
+.em-counter-stepper{display:grid;grid-template-columns:44px minmax(24px,1fr) 44px;gap:4px;align-items:center;min-width:0}
+.em-counter-stepper button,.em-counter-stepper input{min-width:0;min-height:52px;width:100%;padding:4px 0;border:1px solid #3b5164;border-radius:11px;text-align:center}
+.em-counter-stepper button{font-size:28px;color:var(--accent);background:#203440;line-height:1}
+.em-counter-stepper .em-counter-plus{background:#29463b;color:#c9ffe0}
+.em-counter-stepper input{font-size:22px;font-variant-numeric:tabular-nums;background:#101e2a;color:#e3f7ec;line-height:1.3}
+.em-counter-stepper button:disabled{opacity:.4;cursor:not-allowed}
+.em-counter.has-draft input{border-color:#e8c480;color:#ffe3af}
+.em-counter-pending{margin-top:11px}.em-counter-pending>small{display:block;font-size:11px;line-height:1.5;color:#ffe2ad}
+.em-counter-pending>div{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}.em-counter-pending button{flex:1;font-size:12px;min-height:44px;padding:5px}
+.em-counter-error{color:#ffccc0;font-size:12px;margin:10px 0 0;line-height:1.5}
+@media(min-width:621px) and (max-width:960px){.em-counter-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:620px){.em-counter{padding:12px;border-radius:16px}.em-counter h3{font-size:26px}.em-counter-group{font-size:12px}.em-counter-cards{gap:10px}}
+@media(max-width:359px){.em-counter{padding:8px}.em-counter-stepper{gap:2px}.em-counter-group{font-size:11px}.em-counter-rate{font-size:12px}.em-counter h3{font-size:23px}.em-counter-cards{gap:8px}.em-counter-stepper input{font-size:20px}}
+@media(max-width:319px){.em-counter-cards{grid-template-columns:1fr}}
